@@ -1,0 +1,38 @@
+{
+    "name": "kanagama/laravel-convert-csv-to-seeder",
+    "description": "CSV を seeder に変換する",
+    "keywords": [
+        "laravel",
+        "csv",
+        "seed",
+        "seeder"
+    ],
+    "authors": [
+        {
+            "name": "kazuma nagama",
+            "email": "k.nagama0632@gmail.com"
+        }
+    ],
+    "license": "MIT",
+    "require": {
+        "laravel/framework": "^8.0 | ^9.0",
+        "php": "^7.4 | ^8.0 | ^8.1",
+        "kanagama/csvreader": "^1.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.0",
+        "orchestra/testbench": "^6.25",
+        "phpstan/phpstan": "^1.10"
+    },
+    "autoload": {
+        "psr-4": {
+            "Kanagama\\CsvToSeeder\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Kanagama\\CsvToSeeder\\tests\\": "tests/"
+        }
+    },
+    "minimum-stability": "stable"
+}
