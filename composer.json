@@ -31,7 +31,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Kanagama\\CsvToSeeder\\tests\\": "tests/"
+            "Kanagama\\CsvToSeeder\\Tests\\": "tests/"
         }
     },
     "minimum-stability": "stable"

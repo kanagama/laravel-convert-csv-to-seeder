@@ -1,8 +1,7 @@
 <?php
 
-namespace App\Libraries;
+namespace Kanagama\CsvToSeeder;
 
-use App\Libraries\Consts\ErrorMsg;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Database\Eloquent\Model;
@@ -10,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Kanagama\CsvReader\CsvReader;
+use Kanagama\CsvToSeeder\Consts\ErrorMsg;
 
 /**
  * @author k.nagama <k.nagama0632@gmail.com>
@@ -21,86 +21,84 @@ class CsvToSeeder
      *
      * @var string|null
      */
-    private ?string $csvPath;
+    private ?string $csvPath = null;
 
     /**
      * 保存先モデル
      *
      * @var string|null
      */
-    private ?string $model;
+    private ?string $model = null;
 
     /**
      * モデルインスタンス
      *
      * @var Model|null
      */
-    private ?Model $instance;
+    private ?Model $instance = null;
 
     /**
      * 割当
      *
      * @var array
      */
-    private array $mappings;
+    private array $mappings = [];
 
     /**
      * デリミタ
      *
      * @var string
      */
-    private string $delimiter;
+    private string $delimiter = ',';
 
     /**
      * created_at, updated_at 追記フラグ
      *
      * @var bool
      */
-    private bool $timestamps;
+    private bool $timestamps = false;
 
     /**
      * created_at 別名
      *
      * @var string
      */
-    private string $created_at;
+    private string $created_at = 'created_at';
 
     /**
      * updated_at 別名
      *
      * @var string
      */
-    private string $updated_at;
+    private string $updated_at = 'updated_at';
 
     /**
      * 1行目をスキップする
      *
      * @var bool
      */
-    private bool $header;
+    private bool $header = false;
 
     /**
      * インポート件数
      *
      * @var int|null
      */
-    private ?int $limit;
+    private ?int $limit = null;
 
     /**
      * 指定した行番号から読み込む
      *
      * @var int|null
      */
-    private ?int $offset;
+    private ?int $offset = null;
 
     /**
-     * トランザクション利用
+     * CSV行カウンタ
      *
-     * @var bool
+     * @var int
      */
-    private bool $transaction;
-
-    private int $counter;
+    private int $counter = 0;
 
     /**
      *
@@ -119,6 +117,10 @@ class CsvToSeeder
     }
 
     /**
+     * CSVのパスを設定する
+     *
+     * @test
+     *
      * @param  string  $csvPath
      * @return self
      */
@@ -133,6 +135,10 @@ class CsvToSeeder
     }
 
     /**
+     * 保存先のモデルを設定
+     *
+     * @test
+     *
      * @param  string  $table
      * @return self
      */
@@ -148,7 +154,12 @@ class CsvToSeeder
     }
 
     /**
+     * CSVのデリミタを設定
+     *
+     * @test
+     *
      * @param  string  $delimiter
+     * @return self
      */
     public function delimiter(string $delimiter = ','): self
     {
@@ -161,6 +172,10 @@ class CsvToSeeder
     }
 
     /**
+     * インポート件数を設定
+     *
+     * @test
+     *
      * @param  int  $limit
      * @return self
      */
@@ -175,6 +190,10 @@ class CsvToSeeder
     }
 
     /**
+     * スキップする行数を設定
+     *
+     * @test
+     *
      * @param  int  $offset
      * @return self
      */
@@ -189,6 +208,10 @@ class CsvToSeeder
     }
 
     /**
+     * ヘッダーをスキップ
+     *
+     * @test
+     *
      * @param  bool  $header
      * @return self
      */
@@ -200,18 +223,12 @@ class CsvToSeeder
     }
 
     /**
-     * @param  bool  $transaction
-     * @return self
-     */
-    public function transaction(bool $transaction = true): self
-    {
-        $this->transaction = $transaction;
-
-        return $this;
-    }
-
-    /**
+     * created_at, updated_at を更新するか
+     *
+     * @test
+     *
      * @param  bool  $timestamps
+     * @return self
      */
     public function timestamps(bool $timestamps = true): self
     {
@@ -220,6 +237,10 @@ class CsvToSeeder
     }
 
     /**
+     * 登録日が別名で設定されているか
+     *
+     * @test
+     *
      * @param  string  $createdAt
      * @return self
      */
@@ -234,6 +255,10 @@ class CsvToSeeder
     }
 
     /**
+     * 更新日時が別名で設定されているか
+     *
+     * @test
+     *
      * @param  string  $updatedAt
      * @return self
      */
@@ -268,8 +293,8 @@ class CsvToSeeder
     {
         $iterator = (new CsvReader(
             $this->getCsvPath(),
-            $this->getDelimiter(),
-            $this->getHeader()
+            $this->getHeader(),
+            $this->getDelimiter()
         ))->readline();
 
         /** \Illuminate\Database\Connection */
@@ -277,20 +302,9 @@ class CsvToSeeder
 
         $connection->statement('SET FOREIGN_KEY_CHECKS=0;');
 
-        if ($this->getTransaction()) {
-            $connection->beginTransaction();
-        }
-
         try {
             $this->insertCsv($iterator);
-
-            if ($this->getTransaction()) {
-                $connection->commit();
-            }
         } catch (\Throwable $e) {
-            if ($this->getTransaction()) {
-                $connection->rollback();
-            }
         } finally {
             $connection->statement('SET FOREIGN_KEY_CHECKS=1;');
 
@@ -421,14 +435,6 @@ class CsvToSeeder
     /**
      * @return bool
      */
-    private function getTransaction(): bool
-    {
-        return $this->transaction;
-    }
-
-    /**
-     * @return bool
-     */
     public function getTimestamps(): bool
     {
         return $this->timestamps;
@@ -481,6 +487,5 @@ class CsvToSeeder
         $this->header = false;
         $this->limit = null;
         $this->offset = null;
-        $this->transaction = false;
     }
 }

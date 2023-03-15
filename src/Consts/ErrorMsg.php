@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Libraries\Consts;
+namespace Kanagama\CsvToSeeder\Consts;
 
 /**
  * @author k.nagama <k.nagama0632@gmail.com>
  */
-final class ErrorMsg
+class ErrorMsg
 {
     /**
      * @var string
