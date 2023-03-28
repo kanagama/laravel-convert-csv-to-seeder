@@ -138,7 +138,7 @@ class CsvToSeeder
      *
      * @test
      *
-     * @param  string  $table
+     * @param  string  $model
      * @return self
      */
     public function model(string $model): self
@@ -496,7 +496,7 @@ class CsvToSeeder
     /**
      * プロパティを初期化する
      *
-     * @return self
+     * @return void
      */
     private function clear()
     {
