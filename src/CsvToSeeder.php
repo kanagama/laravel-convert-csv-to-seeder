@@ -6,7 +6,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
+use InvalidArgumentException;
 use Kanagama\CsvReader\CsvReader;
 use Kanagama\CsvToSeeder\Consts\ErrorMsg;
 
@@ -144,7 +144,7 @@ class CsvToSeeder
     public function model(string $model): self
     {
         if (empty($model) || !is_string($model) || !class_exists($model)) {
-            throw new ValidationException(ErrorMsg::VALIDATE_ERROR);
+            throw new InvalidArgumentException(ErrorMsg::VALIDATE_ERROR);
         }
 
         $this->model = $model;
@@ -163,7 +163,7 @@ class CsvToSeeder
     public function delimiter(string $delimiter = ','): self
     {
         if (empty($delimiter) || !strlen($delimiter)) {
-            throw new ValidationException(ErrorMsg::VALIDATE_ERROR);
+            throw new InvalidArgumentException(ErrorMsg::VALIDATE_ERROR);
         }
 
         $this->delimiter = $delimiter;
@@ -181,7 +181,7 @@ class CsvToSeeder
     public function limit(int $limit): self
     {
         if ($limit < 1) {
-            throw new ValidationException(ErrorMsg::VALIDATE_ERROR);
+            throw new InvalidArgumentException(ErrorMsg::VALIDATE_ERROR);
         }
 
         $this->limit = $limit;
@@ -199,7 +199,7 @@ class CsvToSeeder
     public function offset(int $offset): self
     {
         if ($offset < 0) {
-            throw new ValidationException(ErrorMsg::VALIDATE_ERROR);
+            throw new InvalidArgumentException(ErrorMsg::VALIDATE_ERROR);
         }
 
         $this->offset = $offset;
@@ -246,7 +246,7 @@ class CsvToSeeder
     public function createdAt(string $createdAt): self
     {
         if (empty($createdAt)) {
-            throw new ValidationException(ErrorMsg::VALIDATE_ERROR);
+            throw new InvalidArgumentException(ErrorMsg::VALIDATE_ERROR);
         }
 
         $this->created_at = $createdAt;
@@ -264,7 +264,7 @@ class CsvToSeeder
     public function updatedAt(string $updatedAt): self
     {
         if (empty($updatedAt)) {
-            throw new ValidationException(ErrorMsg::VALIDATE_ERROR);
+            throw new InvalidArgumentException(ErrorMsg::VALIDATE_ERROR);
         }
 
         $this->updated_at = $updatedAt;
@@ -280,7 +280,7 @@ class CsvToSeeder
     public function mappings(array $mappings): self
     {
         if (empty($mappings)) {
-            throw new ValidationException(ErrorMsg::VALIDATE_ERROR);
+            throw new InvalidArgumentException(ErrorMsg::VALIDATE_ERROR);
         }
 
         $this->mappings = $mappings;
@@ -415,7 +415,7 @@ class CsvToSeeder
     private function getInstance(): Model
     {
         if (empty($this->instance)) {
-            throw new ValidationException(ErrorMsg::VALIDATE_NOT_MODEL);
+            throw new InvalidArgumentException(ErrorMsg::VALIDATE_NOT_MODEL);
         }
 
         return $this->instance;
@@ -502,7 +502,7 @@ class CsvToSeeder
             return $this->mappings;
         }
 
-        throw new ValidationException(ErrorMsg::VALIDATE_NOT_MAPPINGS);
+        throw new InvalidArgumentException(ErrorMsg::VALIDATE_NOT_MAPPINGS);
     }
 
     /**

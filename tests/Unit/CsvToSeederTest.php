@@ -7,7 +7,7 @@ use Kanagama\CsvToSeeder\Consts\ErrorMsg;
 use Kanagama\CsvToSeeder\Tests\Models\User;
 use Kanagama\CsvToSeeder\Tests\TestCase;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
-use Illuminate\Validation\ValidationException;
+use InvalidArgumentException;
 use ReflectionClass;
 
 class CsvToSeederTest extends TestCase
@@ -72,7 +72,7 @@ class CsvToSeederTest extends TestCase
      */
     public function modelが存在しなければ例外()
     {
-        $this->expectException(ValidationException::class);
+        $this->expectException(InvalidArgumentException::class);
 
         CsvToSeeder::init()->model('\App\Models\User');
     }
@@ -103,7 +103,7 @@ class CsvToSeederTest extends TestCase
      */
     public function delimiterに空は設定できない()
     {
-        $this->expectException(ValidationException::class);
+        $this->expectException(InvalidArgumentException::class);
 
         CsvToSeeder::init()->delimiter('');
     }
@@ -132,7 +132,7 @@ class CsvToSeederTest extends TestCase
      */
     public function limitは0とマイナスを受け付けない(int $limit)
     {
-        $this->expectException(ValidationException::class);
+        $this->expectException(InvalidArgumentException::class);
 
         CsvToSeeder::init()->limit($limit);
     }
@@ -174,7 +174,7 @@ class CsvToSeederTest extends TestCase
      */
     public function offsetはマイナスを受け付けない()
     {
-        $this->expectException(ValidationException::class);
+        $this->expectException(InvalidArgumentException::class);
 
         CsvToSeeder::init()->offset(-1);
     }
@@ -241,7 +241,7 @@ class CsvToSeederTest extends TestCase
      */
     public function createdAtは空白を受け付けない()
     {
-        $this->expectException(ValidationException::class);
+        $this->expectException(InvalidArgumentException::class);
 
         CsvToSeeder::init()->createdAt('');
     }
@@ -270,7 +270,7 @@ class CsvToSeederTest extends TestCase
      */
     public function updatedAtは空白を受け付けない()
     {
-        $this->expectException(ValidationException::class);
+        $this->expectException(InvalidArgumentException::class);
 
         CsvToSeeder::init()->updatedAt('');
     }
@@ -300,7 +300,7 @@ class CsvToSeederTest extends TestCase
      */
     public function mappingsは空の配列を受け付けない()
     {
-        $this->expectException(ValidationException::class);
+        $this->expectException(InvalidArgumentException::class);
 
         CsvToSeeder::init()->mappings([]);
     }
