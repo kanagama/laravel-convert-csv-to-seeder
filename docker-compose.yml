@@ -12,6 +12,7 @@ services:
       MYSQL_DATABASE: tests
       MYSQL_USER: user
       MYSQL_PASSWORD: pass
+    init: true
     # 永続化は不要
     # volumes:
     #   - ./mysql_data:/var/lib/mysql

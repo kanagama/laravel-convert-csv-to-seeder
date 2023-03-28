@@ -34,5 +34,11 @@
             "Kanagama\\CsvToSeeder\\Tests\\": "tests/"
         }
     },
+    "exclude": [
+        "tests/",
+        ".docker/",
+        ".github/",
+        "*.md"
+    ],
     "minimum-stability": "stable"
 }

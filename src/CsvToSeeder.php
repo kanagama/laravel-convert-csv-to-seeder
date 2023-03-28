@@ -332,12 +332,21 @@ class CsvToSeeder
                     continue;
                 }
 
-                $saves[$mappings[$key]] = null;
-                if ($mappings[$key] === 'null') {
+                if (!empty($row)) {
+                    if ($row === 'null') {
+                        $saves[$mappings[$key]] = null;
+                        continue;
+                    }
+                    if ($row === '0') {
+                        $saves[$mappings[$key]] = 0;
+                        continue;
+                    }
+
+                    $saves[$mappings[$key]] = trim($row);
                     continue;
                 }
-                if (!empty($row) || $row === '0') {
-                    $saves[$mappings[$key]] = trim($row);
+                if ($row === '') {
+                    $saves[$mappings[$key]] = '';
                 }
             }
 
