@@ -333,6 +333,9 @@ class CsvToSeeder
                 }
 
                 $saves[$mappings[$key]] = null;
+                if ($mappings[$key] === 'null') {
+                    continue;
+                }
                 if (!empty($row) || $row === '0') {
                     $saves[$mappings[$key]] = trim($row);
                 }
