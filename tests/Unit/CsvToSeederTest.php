@@ -423,7 +423,7 @@ class CsvToSeederTest extends TestCase
     /**
      * @test
      */
-    public function insert()
+    public function insertで正しくレコードが登録される()
     {
         User::truncate();
 

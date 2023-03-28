@@ -7,11 +7,31 @@ jobs:
   phpunit-test:
     runs-on: ubuntu-latest
 
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_DATABASE: tests
+        ports:
+          - 13306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
     strategy:
-      matrix:
-        php: [7.3, 7.4, 8.0, 8.1, 8.2]
       fail-fast: true
-      max-parallel: 2
+      max-parallel: 1
+      matrix:
+        php: [7.4, 8.0, 8.1, 8.2]
+        library:
+          - { laravel: ^10.0 }
+          - { laravel: ^9.0 }
+          - { laravel: ^8.0 }
+        exclude:
+          - { php: 7.4, library: { laravel: ^9.0 } }
+          - { php: 7.4, library: { laravel: ^10.0 } }
+          - { php: 8.0, library: { laravel: ^10.0 } }
+          - { php: 8.1, library: { laravel: ^8.0 } }
+          - { php: 8.2, library: { laravel: ^8.0 } }
 
     steps:
     - name: Checkout code
@@ -21,17 +41,27 @@ jobs:
       uses: shivammathur/setup-php@v2
       with:
         php-version: ${{ matrix.php }}
+        extensions: mbstring, zip, xml
 
-    - name: Install Composer
+    - name: Laravel Install
       run: |
-        php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-        php composer-setup.php --install-dir=/usr/local/bin --filename=composer
-        php -r "unlink('composer-setup.php');"
-        composer install
-    - name: Install Dependencies
+        composer require --dev "laravel/framework:${{ matrix.library.laravel }}"
+
+    - name: Execute SQL files in MySQL container
       run: |
-        sudo apt-get update
-        sudo apt-get install -y libonig-dev libzip-dev unzip libxml2 zlib1g-dev
+        mysql -h 127.0.0.1 -P 13306 -uroot -ppassword tests < .docker/mysql-init/create_users.sql
+
     - name: Run PHPUnit Test
+      # phpunit が 9.3 以降は phpunit.xml のフォーマットが変わっており、非推奨の warning が出る
+      # 新しいフォーマットに変換するコマンドを実行する
+      # ここでのエラーは重要ではないため、「 || true」を付与してエラーでも続ける
       run: |
+        if [[ ${{ matrix.php }} == "8.1" || ${{ matrix.php }} == "8.2" ]]; then
+          vendor/bin/phpunit --migrate-configuration || true
+        fi
         vendor/bin/phpunit tests/Unit/CsvToSeederTest.php
+      env:
+        DB_PORT: 13306
+        DB_HOST: 127.0.0.1
+        DB_USERNAME: root
+        DB_PASSWORD: password

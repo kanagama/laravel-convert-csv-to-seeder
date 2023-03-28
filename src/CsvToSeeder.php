@@ -6,7 +6,6 @@ use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Kanagama\CsvReader\CsvReader;
 use Kanagama\CsvToSeeder\Consts\ErrorMsg;
@@ -24,7 +23,7 @@ class CsvToSeeder
     private ?string $csvPath = null;
 
     /**
-     * 保存先モデル
+     * 保存先model
      *
      * @var string|null
      */
@@ -273,6 +272,8 @@ class CsvToSeeder
     }
 
     /**
+     * 列をマッピングする
+     *
      * @param  array  $mappings
      * @return self
      */
@@ -357,6 +358,8 @@ class CsvToSeeder
     }
 
     /**
+     * offset の値が正しいかどうかチェック
+     *
      * @return bool
      */
     private function checkOffset(int $count): bool
@@ -369,6 +372,8 @@ class CsvToSeeder
     }
 
     /**
+     * limit の値が正しいかどうかチェック
+     *
      * @return bool
      */
     private function checkLimit(): bool
@@ -381,6 +386,8 @@ class CsvToSeeder
     }
 
     /**
+     * CSVのパスを取得
+     *
      * @return string
      */
     private function getCsvPath(): string
@@ -389,9 +396,11 @@ class CsvToSeeder
     }
 
     /**
+     * セットしたモデルインスタンスを取得
+     *
      * @return Model
      */
-    public function getInstance(): Model
+    private function getInstance(): Model
     {
         if (empty($this->instance)) {
             throw new ValidationException(ErrorMsg::VALIDATE_NOT_MODEL);
@@ -401,6 +410,8 @@ class CsvToSeeder
     }
 
     /**
+     * デリミタを取得
+     *
      * @return string
      */
     private function getDelimiter(): string
@@ -409,6 +420,8 @@ class CsvToSeeder
     }
 
     /**
+     * limit 値を取得
+     *
      * @return int|null
      */
     private function getLimit(): ?int
@@ -417,6 +430,8 @@ class CsvToSeeder
     }
 
     /**
+     * offset 値を取得
+     *
      * @return int|null
      */
     private function getOffset(): ?int
@@ -425,6 +440,8 @@ class CsvToSeeder
     }
 
     /**
+     * ヘッダーを省略するか
+     *
      * @return bool
      */
     private function getHeader(): bool
@@ -433,22 +450,28 @@ class CsvToSeeder
     }
 
     /**
+     * timestamps フラグを取得
+     *
      * @return bool
      */
-    public function getTimestamps(): bool
+    private function getTimestamps(): bool
     {
         return $this->timestamps;
     }
 
     /**
+     * 登録日時カラム名を取得
+     *
      * @return string
      */
-    public function getCreatedAt(): string
+    private function getCreatedAt(): string
     {
         return $this->created_at;
     }
 
     /**
+     * 更新日時カラム名を取得
+     *
      * @return string
      */
     private function getUpdatedAt(): string
@@ -457,6 +480,8 @@ class CsvToSeeder
     }
 
     /**
+     * マッピング情報を取得
+     *
      * @return array
      */
     private function getMappings(): array
