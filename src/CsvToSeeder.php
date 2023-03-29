@@ -6,8 +6,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Validation\ValidationException;
+use InvalidArgumentException;
 use Kanagama\CsvReader\CsvReader;
 use Kanagama\CsvToSeeder\Consts\ErrorMsg;
 
@@ -24,7 +23,7 @@ class CsvToSeeder
     private ?string $csvPath = null;
 
     /**
-     * 保存先モデル
+     * 保存先model
      *
      * @var string|null
      */
@@ -139,13 +138,13 @@ class CsvToSeeder
      *
      * @test
      *
-     * @param  string  $table
+     * @param  string  $model
      * @return self
      */
     public function model(string $model): self
     {
         if (empty($model) || !is_string($model) || !class_exists($model)) {
-            throw new ValidationException(ErrorMsg::VALIDATE_ERROR);
+            throw new InvalidArgumentException(ErrorMsg::VALIDATE_ERROR);
         }
 
         $this->model = $model;
@@ -164,7 +163,7 @@ class CsvToSeeder
     public function delimiter(string $delimiter = ','): self
     {
         if (empty($delimiter) || !strlen($delimiter)) {
-            throw new ValidationException(ErrorMsg::VALIDATE_ERROR);
+            throw new InvalidArgumentException(ErrorMsg::VALIDATE_ERROR);
         }
 
         $this->delimiter = $delimiter;
@@ -182,7 +181,7 @@ class CsvToSeeder
     public function limit(int $limit): self
     {
         if ($limit < 1) {
-            throw new ValidationException(ErrorMsg::VALIDATE_ERROR);
+            throw new InvalidArgumentException(ErrorMsg::VALIDATE_ERROR);
         }
 
         $this->limit = $limit;
@@ -200,7 +199,7 @@ class CsvToSeeder
     public function offset(int $offset): self
     {
         if ($offset < 0) {
-            throw new ValidationException(ErrorMsg::VALIDATE_ERROR);
+            throw new InvalidArgumentException(ErrorMsg::VALIDATE_ERROR);
         }
 
         $this->offset = $offset;
@@ -247,7 +246,7 @@ class CsvToSeeder
     public function createdAt(string $createdAt): self
     {
         if (empty($createdAt)) {
-            throw new ValidationException(ErrorMsg::VALIDATE_ERROR);
+            throw new InvalidArgumentException(ErrorMsg::VALIDATE_ERROR);
         }
 
         $this->created_at = $createdAt;
@@ -265,7 +264,7 @@ class CsvToSeeder
     public function updatedAt(string $updatedAt): self
     {
         if (empty($updatedAt)) {
-            throw new ValidationException(ErrorMsg::VALIDATE_ERROR);
+            throw new InvalidArgumentException(ErrorMsg::VALIDATE_ERROR);
         }
 
         $this->updated_at = $updatedAt;
@@ -273,13 +272,15 @@ class CsvToSeeder
     }
 
     /**
+     * 列をマッピングする
+     *
      * @param  array  $mappings
      * @return self
      */
     public function mappings(array $mappings): self
     {
         if (empty($mappings)) {
-            throw new ValidationException(ErrorMsg::VALIDATE_ERROR);
+            throw new InvalidArgumentException(ErrorMsg::VALIDATE_ERROR);
         }
 
         $this->mappings = $mappings;
@@ -331,9 +332,21 @@ class CsvToSeeder
                     continue;
                 }
 
-                $saves[$mappings[$key]] = null;
-                if (!empty($row) || $row === '0') {
+                if (!empty($row)) {
+                    if ($row === 'null') {
+                        $saves[$mappings[$key]] = null;
+                        continue;
+                    }
+                    if ($row === '0') {
+                        $saves[$mappings[$key]] = 0;
+                        continue;
+                    }
+
                     $saves[$mappings[$key]] = trim($row);
+                    continue;
+                }
+                if ($row === '') {
+                    $saves[$mappings[$key]] = '';
                 }
             }
 
@@ -357,6 +370,8 @@ class CsvToSeeder
     }
 
     /**
+     * offset の値が正しいかどうかチェック
+     *
      * @return bool
      */
     private function checkOffset(int $count): bool
@@ -369,6 +384,8 @@ class CsvToSeeder
     }
 
     /**
+     * limit の値が正しいかどうかチェック
+     *
      * @return bool
      */
     private function checkLimit(): bool
@@ -381,6 +398,8 @@ class CsvToSeeder
     }
 
     /**
+     * CSVのパスを取得
+     *
      * @return string
      */
     private function getCsvPath(): string
@@ -389,18 +408,22 @@ class CsvToSeeder
     }
 
     /**
+     * セットしたモデルインスタンスを取得
+     *
      * @return Model
      */
-    public function getInstance(): Model
+    private function getInstance(): Model
     {
         if (empty($this->instance)) {
-            throw new ValidationException(ErrorMsg::VALIDATE_NOT_MODEL);
+            throw new InvalidArgumentException(ErrorMsg::VALIDATE_NOT_MODEL);
         }
 
         return $this->instance;
     }
 
     /**
+     * デリミタを取得
+     *
      * @return string
      */
     private function getDelimiter(): string
@@ -409,6 +432,8 @@ class CsvToSeeder
     }
 
     /**
+     * limit 値を取得
+     *
      * @return int|null
      */
     private function getLimit(): ?int
@@ -417,6 +442,8 @@ class CsvToSeeder
     }
 
     /**
+     * offset 値を取得
+     *
      * @return int|null
      */
     private function getOffset(): ?int
@@ -425,6 +452,8 @@ class CsvToSeeder
     }
 
     /**
+     * ヘッダーを省略するか
+     *
      * @return bool
      */
     private function getHeader(): bool
@@ -433,22 +462,28 @@ class CsvToSeeder
     }
 
     /**
+     * timestamps フラグを取得
+     *
      * @return bool
      */
-    public function getTimestamps(): bool
+    private function getTimestamps(): bool
     {
         return $this->timestamps;
     }
 
     /**
+     * 登録日時カラム名を取得
+     *
      * @return string
      */
-    public function getCreatedAt(): string
+    private function getCreatedAt(): string
     {
         return $this->created_at;
     }
 
     /**
+     * 更新日時カラム名を取得
+     *
      * @return string
      */
     private function getUpdatedAt(): string
@@ -457,6 +492,8 @@ class CsvToSeeder
     }
 
     /**
+     * マッピング情報を取得
+     *
      * @return array
      */
     private function getMappings(): array
@@ -465,13 +502,13 @@ class CsvToSeeder
             return $this->mappings;
         }
 
-        throw new ValidationException(ErrorMsg::VALIDATE_NOT_MAPPINGS);
+        throw new InvalidArgumentException(ErrorMsg::VALIDATE_NOT_MAPPINGS);
     }
 
     /**
      * プロパティを初期化する
      *
-     * @return self
+     * @return void
      */
     private function clear()
     {
